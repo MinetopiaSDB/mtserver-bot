@@ -1,10 +1,10 @@
-package nl.mtserver.discordbot.dns;
+package nl.mtserver.discordbot.utils;
 
 import java.util.concurrent.CompletableFuture;
 
-public class CfUtil {
+public class CompletableFutureUtil {
 
-    private CfUtil() {
+    private CompletableFutureUtil() {
     }
 
     public static <T> CompletableFuture<T> completedExceptionally(Throwable throwable) {

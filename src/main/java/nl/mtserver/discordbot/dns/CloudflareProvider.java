@@ -4,6 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import nl.mtserver.discordbot.utils.CompletableFutureUtil;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -84,7 +86,7 @@ public class CloudflareProvider implements DNSProvider {
                             .map(JsonElement::getAsJsonObject)
                             .map(o -> o.get("message").getAsString())
                             .collect(Collectors.joining(", "));
-                    return CfUtil.completedExceptionally(new RuntimeException(errorMessage));
+                    return CompletableFutureUtil.completedExceptionally(new RuntimeException(errorMessage));
                 });
     }
 
@@ -103,7 +105,7 @@ public class CloudflareProvider implements DNSProvider {
                     .thenApply(HttpResponse::body)
                     .thenApply(JsonParser::parseString);
         } catch (URISyntaxException ex) {
-            return CfUtil.completedExceptionally(ex);
+            return CompletableFutureUtil.completedExceptionally(ex);
         }
     }
 }
