@@ -11,7 +11,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class CloudflareProvider implements DNSProvider {
@@ -31,9 +30,9 @@ public class CloudflareProvider implements DNSProvider {
     @Override
     public CompletableFuture<Boolean> createSubdomain(String subdomain, String ip, int port) {
         createRecord("A", subdomain + "." + domain, "159.69.109.200", false);
-        return createRecord("A", subdomain + "-ipv4." + domain, ip,false).thenApplyAsync(success -> {
+        return createRecord("A", subdomain + "-ipv4." + domain, ip,false).thenCompose(success -> {
             if (!success) {
-                return false;
+                return CompletableFuture.completedFuture(false);
             }
             JsonObject data = new JsonObject();
             data.addProperty("priority", 1);
@@ -49,7 +48,7 @@ public class CloudflareProvider implements DNSProvider {
                     // TODO: delete A record?
                 }
                 return srvSuccess;
-            }).join();
+            });
         });
     }
 
@@ -98,8 +97,9 @@ public class CloudflareProvider implements DNSProvider {
             return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(httpResponse -> JsonParser.parseString(httpResponse.body()));
         } catch (URISyntaxException ex) {
-            ex.printStackTrace();
+            CompletableFuture<JsonElement> completableFuture = CompletableFuture.completedFuture(null);
+            completableFuture.completeExceptionally(ex);
+            return completableFuture;
         }
-        return CompletableFuture.completedFuture(null);
     }
 }
