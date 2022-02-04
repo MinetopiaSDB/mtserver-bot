@@ -1,0 +1,35 @@
+.classpath
+.project
+.metadata
+bin/
+tmp/
+target/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+dependency-reduced-pom.xml
+
+# IntelliJ
+out/
+.idea/
+*.iml
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# Code Recommenders
+.recommenders/
+
+# Annotation Processing
+.apt_generated/
+
+# Project specific
+config.yml
