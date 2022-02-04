@@ -13,12 +13,10 @@ public class DiscordBot {
 
     public DiscordBot(YamlFile file) throws LoginException {
         JDABuilder builder = JDABuilder.createLight(file.getString("Discord.BotToken"));
-
         this.jda = builder.build();
     }
 
     public JDA getJDA() {
         return jda;
     }
-
 }
