@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -12,6 +11,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class CloudflareProvider implements DNSProvider {
 
@@ -30,10 +31,11 @@ public class CloudflareProvider implements DNSProvider {
     @Override
     public CompletableFuture<Boolean> createSubdomain(String subdomain, String ip, int port) {
         createRecord("A", subdomain + "." + domain, "159.69.109.200", false);
-        return createRecord("A", subdomain + "-ipv4." + domain, ip,false).thenCompose(success -> {
+        return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(success -> {
             if (!success) {
                 return CompletableFuture.completedFuture(false);
             }
+
             JsonObject data = new JsonObject();
             data.addProperty("priority", 1);
             data.addProperty("weight", 1);
@@ -68,19 +70,22 @@ public class CloudflareProvider implements DNSProvider {
         if (data != null)
             body.add("data", data);
 
-        return request("/zones/" + zoneId + "/dns_records", "POST", body.getAsJsonObject()).thenApply(jsonElement -> {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            if (!jsonObject.get("success").getAsBoolean()) {
-                JsonArray errors = jsonObject.get("errors").getAsJsonArray();
-                // Throw errors from Cloudflare API as runtime exception
-                errors.forEach(error -> {
-                    throw new RuntimeException(error.getAsJsonObject().get("message").getAsString());
+        return request("/zones/" + zoneId + "/dns_records", "POST", body.getAsJsonObject())
+                .thenCompose(jsonElement -> {
+                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    if (jsonObject.get("success").getAsBoolean()) {
+                        // No errors, so subdomain was created successfully
+                        return CompletableFuture.completedFuture(true);
+                    }
+
+                    JsonArray errors = jsonObject.get("errors").getAsJsonArray();
+                    // Throw errors from Cloudflare API as runtime exception
+                    String errorMessage = StreamSupport.stream(errors.spliterator(), false)
+                            .map(JsonElement::getAsJsonObject)
+                            .map(o -> o.get("message").getAsString())
+                            .collect(Collectors.joining(", "));
+                    return CfUtil.completedExceptionally(new RuntimeException(errorMessage));
                 });
-                return false;
-            }
-            // No errors, so subdomain was created successfully
-            return true;
-        });
     }
 
     private CompletableFuture<JsonElement> request(String endpoint, String method, JsonElement body) {
@@ -95,11 +100,10 @@ public class CloudflareProvider implements DNSProvider {
                     .build();
 
             return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(httpResponse -> JsonParser.parseString(httpResponse.body()));
+                    .thenApply(HttpResponse::body)
+                    .thenApply(JsonParser::parseString);
         } catch (URISyntaxException ex) {
-            CompletableFuture<JsonElement> completableFuture = CompletableFuture.completedFuture(null);
-            completableFuture.completeExceptionally(ex);
-            return completableFuture;
+            return CfUtil.completedExceptionally(ex);
         }
     }
 }
