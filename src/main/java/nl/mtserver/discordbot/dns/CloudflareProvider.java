@@ -30,11 +30,21 @@ public class CloudflareProvider implements DNSProvider {
 
     @Override
     public CompletableFuture<Boolean> createSubdomain(String subdomain, String ip, int port) {
+        createRecord("A", subdomain + "." + domain, "159.69.109.200", false);
         return createRecord("A", subdomain + "-ipv4." + domain, ip,false).thenApplyAsync(success -> {
             if (!success) {
                 return false;
             }
-            return createRecord("SRV", subdomain + "." + domain, ip, port, true).thenApply(srvSuccess -> {
+            JsonObject data = new JsonObject();
+            data.addProperty("priority", 1);
+            data.addProperty("weight", 1);
+            data.addProperty("port", port);
+            data.addProperty("target", subdomain + "-ipv4." + domain);
+            data.addProperty("service", "_minecraft");
+            data.addProperty("proto", "_tcp");
+            data.addProperty("name", subdomain + "." + domain);
+
+            return createRecord("SRV", subdomain + "." + domain, ip, data, false).thenApply(srvSuccess -> {
                 if (!srvSuccess) {
                     // TODO: delete A record?
                 }
@@ -49,15 +59,15 @@ public class CloudflareProvider implements DNSProvider {
     }
 
     @Override
-    public CompletableFuture<Boolean> createRecord(String type, String name, String content, Integer priority, boolean proxied) throws RuntimeException {
+    public CompletableFuture<Boolean> createRecord(String type, String name, String content, JsonObject data, boolean proxied) throws RuntimeException {
         JsonObject body = new JsonObject();
         body.addProperty("type", type);
         body.addProperty("name", name);
         body.addProperty("content", content);
         body.addProperty("proxied", proxied);
 
-        if (priority != null)
-            body.addProperty("priority", priority);
+        if (data != null)
+            body.add("data", data);
 
         return request("/zones/" + zoneId + "/dns_records", "POST", body.getAsJsonObject()).thenApply(jsonElement -> {
             JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -77,8 +87,8 @@ public class CloudflareProvider implements DNSProvider {
     private CompletableFuture<JsonElement> request(String endpoint, String method, JsonElement body) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("https://api.cloudflare.com/client/v4/" + endpoint))
                     .method(method, HttpRequest.BodyPublishers.ofString(body.toString()))
+                    .uri(new URI("https://api.cloudflare.com/client/v4" + endpoint))
                     .timeout(Duration.ofSeconds(5))
                     .header("Content-Type", "application/json")
                     .header("X-Auth-Email", authEmail)
@@ -90,6 +100,6 @@ public class CloudflareProvider implements DNSProvider {
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
 }

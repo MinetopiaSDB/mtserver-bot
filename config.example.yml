@@ -1,3 +1,8 @@
 Discord:
   BotToken: 'YOUR_BOT_TOKEN'
-  
+Domains:
+  -
+      ZoneId: ''
+      Domain: 'mtserver.nl'
+      AuthEmail: ''
+      AuthKey: ''
