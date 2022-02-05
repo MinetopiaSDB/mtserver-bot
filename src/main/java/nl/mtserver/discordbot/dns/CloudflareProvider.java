@@ -32,7 +32,6 @@ public class CloudflareProvider implements DNSProvider {
 
     @Override
     public CompletableFuture<Boolean> createSubdomain(String subdomain, String ip, int port) {
-        createRecord("A", subdomain + "." + domain, "159.69.109.200", false);
         return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(success -> {
             if (!success) {
                 return CompletableFuture.completedFuture(false);
@@ -51,6 +50,9 @@ public class CloudflareProvider implements DNSProvider {
                 if (!srvSuccess) {
                     // TODO: delete A record?
                 }
+
+                // Create A record for subdomain
+                createRecord("A", subdomain + "." + domain, "159.69.109.200", false);
                 return srvSuccess;
             });
         });
