@@ -50,9 +50,6 @@ public class CloudflareProvider implements DNSProvider {
                 if (!srvSuccess) {
                     // TODO: delete A record?
                 }
-
-                // Create A record for subdomain
-                createRecord("A", subdomain + "." + domain, "159.69.109.200", false);
                 return srvSuccess;
             });
         });
