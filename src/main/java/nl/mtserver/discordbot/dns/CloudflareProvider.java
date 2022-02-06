@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class CloudflareProvider implements DNSProvider {
+public class CloudflareProvider extends DNSProvider {
 
     private final int providerId;
     private final String zoneId, domain, authEmail, authKey;
@@ -35,12 +35,18 @@ public class CloudflareProvider implements DNSProvider {
         this.client = HttpClient.newHttpClient();
     }
 
+    @Override
     public int getDNSProviderId() {
         return this.providerId;
     }
 
     @Override
-    public CompletableFuture<List<String>> createSubdomain(String subdomain, String ip, int port) {
+    public String getDomainName() {
+        return domain;
+    }
+
+    @Override
+    protected CompletableFuture<List<String>> createSubdomain(String subdomain, String ip, int port) {
         return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(zoneId -> {
             if (zoneId == null) {
                 return CompletableFuture.completedFuture(new ArrayList<>());
@@ -64,13 +70,29 @@ public class CloudflareProvider implements DNSProvider {
         });
     }
 
-    @Override
-    public CompletableFuture<String> createRecord(String type, String name, String content, boolean proxied) throws RuntimeException {
+    /**
+     * Create a DNS record
+     * @param type The type of the record
+     * @param name The name of the record
+     * @param content The IP address or domain name
+     * @param proxied Whether the record should be proxied
+     * @return
+     */
+    private CompletableFuture<String> createRecord(String type, String name, String content, boolean proxied) throws RuntimeException {
         return createRecord(type, name, content, null, proxied);
     }
 
-    @Override
-    public CompletableFuture<String> createRecord(String type, String name, String content, JsonObject data, boolean proxied) throws RuntimeException {
+    /**
+     * Create a DNS record
+     * @param type The type of the record
+     * @param name The name of the record
+     * @param content The IP address or domain name
+     * @param data (optional)
+     * @param proxied Whether the record should be proxied
+     * @return ID of created DNS record
+     * @throws RuntimeException if the request failed
+     */
+    private CompletableFuture<String> createRecord(String type, String name, String content, JsonObject data, boolean proxied) throws RuntimeException {
         JsonObject body = new JsonObject();
         body.addProperty("type", type);
         body.addProperty("name", name);

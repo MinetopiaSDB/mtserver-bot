@@ -1,6 +1,7 @@
 package nl.mtserver.discordbot;
 
 import nl.mtserver.discordbot.data.HikariSQL;
+import nl.mtserver.discordbot.data.Subdomain;
 import nl.mtserver.discordbot.dns.CloudflareProvider;
 import nl.mtserver.discordbot.dns.DNSProvider;
 import org.simpleyaml.configuration.file.YamlFile;
