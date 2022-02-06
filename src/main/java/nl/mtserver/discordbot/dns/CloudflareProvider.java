@@ -12,16 +12,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class CloudflareProvider implements DNSProvider {
 
+    private final int providerId;
     private final String zoneId, domain, authEmail, authKey;
     private final HttpClient client;
 
-    public CloudflareProvider(String zoneId, String domain, String authEmail, String authKey) {
+    public CloudflareProvider(int providerId, String zoneId, String domain, String authEmail, String authKey) {
+        this.providerId = providerId;
         this.zoneId = zoneId;
         this.domain = domain;
         this.authEmail = authEmail;
@@ -30,11 +35,15 @@ public class CloudflareProvider implements DNSProvider {
         this.client = HttpClient.newHttpClient();
     }
 
+    public int getDNSProviderId() {
+        return this.providerId;
+    }
+
     @Override
-    public CompletableFuture<Boolean> createSubdomain(String subdomain, String ip, int port) {
-        return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(success -> {
-            if (!success) {
-                return CompletableFuture.completedFuture(false);
+    public CompletableFuture<List<String>> createSubdomain(String subdomain, String ip, int port) {
+        return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(zoneId -> {
+            if (zoneId == null) {
+                return CompletableFuture.completedFuture(new ArrayList<>());
             }
 
             JsonObject data = new JsonObject();
@@ -46,22 +55,22 @@ public class CloudflareProvider implements DNSProvider {
             data.addProperty("proto", "_tcp");
             data.addProperty("name", subdomain + "." + domain);
 
-            return createRecord("SRV", subdomain + "." + domain, ip, data, false).thenApply(srvSuccess -> {
-                if (!srvSuccess) {
+            return createRecord("SRV", subdomain + "." + domain, ip, data, false).thenApply(recordId -> {
+                if (recordId == null) {
                     // TODO: delete A record?
                 }
-                return srvSuccess;
+                return Arrays.asList(zoneId, recordId);
             });
         });
     }
 
     @Override
-    public CompletableFuture<Boolean> createRecord(String type, String name, String content, boolean proxied) throws RuntimeException {
+    public CompletableFuture<String> createRecord(String type, String name, String content, boolean proxied) throws RuntimeException {
         return createRecord(type, name, content, null, proxied);
     }
 
     @Override
-    public CompletableFuture<Boolean> createRecord(String type, String name, String content, JsonObject data, boolean proxied) throws RuntimeException {
+    public CompletableFuture<String> createRecord(String type, String name, String content, JsonObject data, boolean proxied) throws RuntimeException {
         JsonObject body = new JsonObject();
         body.addProperty("type", type);
         body.addProperty("name", name);
@@ -76,7 +85,8 @@ public class CloudflareProvider implements DNSProvider {
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
                     if (jsonObject.get("success").getAsBoolean()) {
                         // No errors, so subdomain was created successfully
-                        return CompletableFuture.completedFuture(true);
+                        JsonObject result = jsonObject.getAsJsonObject("result");
+                        return CompletableFuture.completedFuture(result.get("id").getAsString());
                     }
 
                     JsonArray errors = jsonObject.get("errors").getAsJsonArray();

@@ -1,5 +1,6 @@
 package nl.mtserver.discordbot;
 
+import nl.mtserver.discordbot.data.HikariSQL;
 import nl.mtserver.discordbot.dns.CloudflareProvider;
 import nl.mtserver.discordbot.dns.DNSProvider;
 import org.simpleyaml.configuration.file.YamlFile;
@@ -24,13 +25,15 @@ public class Main {
             throw new RuntimeException("Config file not found or malformed!", ex);
         }
 
-        // Setup database
+        HikariSQL.getInstance().setup(configFile.getString("Database.host"), configFile.getInt("Database.port"),
+                configFile.getString("Database.user"), configFile.getString("Database.password"), configFile.getString("Database.database"));
 
 
         for (Object dnsProviderObj : configFile.getList("Domains")) {
             Map<String, String> dnsProvider = (Map<String, String>) dnsProviderObj;
 
-            dnsProviders.add(new CloudflareProvider(dnsProvider.get("ZoneId"), dnsProvider.get("Domain"),
+            int id = DNSProvider.firstOrCreate(dnsProvider.get("Domain"));
+            dnsProviders.add(new CloudflareProvider(id, dnsProvider.get("ZoneId"), dnsProvider.get("Domain"),
                     dnsProvider.get("AuthEmail"), dnsProvider.get("AuthKey")));
         }
 

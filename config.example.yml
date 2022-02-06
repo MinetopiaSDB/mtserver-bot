@@ -1,5 +1,11 @@
 Discord:
   BotToken: 'YOUR_BOT_TOKEN'
+Database:
+  host: 'localhost'
+  port: 3306
+  user: 'root'
+  password: 'root'
+  database: 'mtserverbot'
 Domains:
   -
       ZoneId: ''
