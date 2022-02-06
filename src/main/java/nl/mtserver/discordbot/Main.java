@@ -15,7 +15,7 @@ import java.util.Map;
 public class Main {
 
     private static DiscordBot bot;
-    private static List<DNSProvider> dnsProviders = new ArrayList<>();
+    private static final List<DNSProvider> dnsProviders = new ArrayList<>();
 
     public static void main(String[] args) {
         YamlFile configFile = new YamlFile("config.yml");
@@ -37,12 +37,14 @@ public class Main {
                     dnsProvider.get("AuthEmail"), dnsProvider.get("AuthKey")));
         }
 
-
         try {
             bot = new DiscordBot(configFile);
         } catch (LoginException ex) {
             throw new RuntimeException("Failed to login to Discord!", ex);
         }
+    }
 
+    public static List<DNSProvider> getDNSProviders() {
+        return dnsProviders;
     }
 }

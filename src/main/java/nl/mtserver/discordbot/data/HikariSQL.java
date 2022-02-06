@@ -51,19 +51,32 @@ public class HikariSQL {
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS dns_providers " +
-                    "(id INTEGER NOT NULL AUTO_INCREMENT, domain VARCHAR(63) NOT NULL UNIQUE, PRIMARY KEY(id))");
+                    "(id INTEGER NOT NULL AUTO_INCREMENT, " +
+                    "domain VARCHAR(63) NOT NULL UNIQUE, " +
+                    "PRIMARY KEY(id))");
 
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS subdomains " +
-                    "(id INTEGER NOT NULL AUTO_INCREMENT, subdomain VARCHAR(63) NOT NULL UNIQUE, user_id BIGINT(18) NOT NULL, PRIMARY KEY(id))");
+                    "(id INTEGER NOT NULL AUTO_INCREMENT, " +
+                    "subdomain VARCHAR(63) NOT NULL UNIQUE, " +
+                    "user_id BIGINT(18) NOT NULL, " +
+                    "dns_provider_id INTEGER NOT NULL," +
+                    "FOREIGN KEY (dns_provider_id) REFERENCES dns_providers(id)," +
+                    "PRIMARY KEY(id))");
 
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS users " +
-                    "(id BIGINT(18) NOT NULL, max_subdomains INT NOT NULL, PRIMARY KEY(id))");
+                    "(id BIGINT(18) NOT NULL, " +
+                    "max_subdomains INT NOT NULL, " +
+                    "PRIMARY KEY(id))");
 
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS dns_records " +
-                    "(id INTEGER NOT NULL AUTO_INCREMENT, record_id VARCHAR(32) NOT NULL, PRIMARY KEY(id))");
+                    "(id INTEGER NOT NULL AUTO_INCREMENT, " +
+                    "record_id VARCHAR(32) NOT NULL," +
+                    "subdomain_id INTEGER NOT NULL," +
+                    "FOREIGN KEY (subdomain_id) REFERENCES subdomains(id)," +
+                    "PRIMARY KEY(id))");
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException exception) {
+            throw new RuntimeException("Failed to create tables", exception);
         }
     }
 }
