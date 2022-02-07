@@ -1,22 +1,14 @@
 package nl.mtserver.discordbot.data;
 
 import nl.mtserver.discordbot.dns.DNSProvider;
+import nl.mtserver.discordbot.dns.DNSRecord;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class Subdomain {
-
-    private int id, dnsProviderId;
-    private String subdomain;
-    private long userId;
-
-    private Subdomain(int id, String subdomain, long userId, int dnsProviderId) {
-        this.id = id;
-        this.subdomain = subdomain;
-        this.userId = userId;
-        this.dnsProviderId = dnsProviderId;
-    }
 
     public static Subdomain findOrCreate(String subdomain, long userId, DNSProvider provider) {
         try (Connection connection = HikariSQL.getInstance().getConnection();
@@ -55,5 +47,42 @@ public class Subdomain {
             exception.printStackTrace();
         }
         return null;
+    }
+
+    private int id, dnsProviderId;
+    private String subdomain;
+    private long userId;
+
+    private Subdomain(int id, String subdomain, long userId, int dnsProviderId) {
+        this.id = id;
+        this.subdomain = subdomain;
+        this.userId = userId;
+        this.dnsProviderId = dnsProviderId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getSubdomain() {
+        return subdomain;
+    }
+
+    public List<DNSRecord> getDNSRecords() {
+        List<DNSRecord> records = new ArrayList<>();
+        try (Connection connection = HikariSQL.getInstance().getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM `dns_records` WHERE subdomain_id=?")) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    records.add(new DNSRecord(resultSet.getInt("id"), resultSet.getString("record_id"),
+                            resultSet.getInt("subdomain_id")));
+                }
+            }
+
+            return records;
+        }catch(SQLException exception) {
+            throw new RuntimeException("Failed to get DNS records for subdomain " + subdomain, exception);
+        }
     }
 }

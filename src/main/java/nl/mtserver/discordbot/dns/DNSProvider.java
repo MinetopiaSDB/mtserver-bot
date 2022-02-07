@@ -36,17 +36,30 @@ public abstract class DNSProvider {
         }
     }
 
-    public CompletableFuture<String> createSubdomain(DNSProvider dnsProvider, long userId, String subdomain, String ip, int port) {
-        return dnsProvider.createSubdomain(subdomain, ip, port).thenApply(list -> {
-            if (list.size() != 2) {
+    public static CompletableFuture<String> createSubdomain(DNSProvider dnsProvider, long userId, String subdomainStr, String ip, int port) {
+        return dnsProvider.createSubdomain(subdomainStr.toLowerCase(), ip, port).thenApply(recordIds -> {
+            if (recordIds.size() != 2) {
                 return "Er is iets misgegaan tijdens het aanmaken van dit subdomein.";
             }
 
             // Create database rows
-            if (Subdomain.findOrCreate(subdomain, userId, dnsProvider) == null) {
+            Subdomain subdomain = Subdomain.findOrCreate(subdomainStr.toLowerCase(), userId, dnsProvider);
+            if (subdomain == null) {
                 return "Er is iets misgegaan tijdens het aanmaken van dit subdomein.";
             }
-            return subdomain.toLowerCase() + "." + dnsProvider.getDomainName() + " succesvol aangemaakt.";
+            recordIds.forEach(recordId -> DNSRecord.create(recordId, subdomain));
+
+            return subdomainStr.toLowerCase() + "." + dnsProvider.getDomainName() + " is succesvol aangemaakt.";
+        });
+    }
+
+    public static CompletableFuture<String> deleteSubdomain(DNSProvider dnsProvider, Subdomain subdomain) {
+        return dnsProvider.deleteSubdomain(subdomain).thenApply(success -> {
+            if (success) {
+                // TODO: delete subdomain from database
+                return subdomain.getSubdomain() + "." + dnsProvider.getDomainName() + " is succesvol verwijderd.";
+            }
+            return "Er is iets misgegaan tijdens het verwijderen van dit subdomein.";
         });
     }
 
@@ -62,5 +75,19 @@ public abstract class DNSProvider {
      */
     public abstract String getDomainName();
 
+    /**
+     * Create a subdomain on the current DNS provider
+     * @param subdomain the subdomain to create
+     * @param ip the IP address to associate with the subdomain
+     * @param port the port to associate with the subdomain
+     * @return a list of the DNS record IDs created
+     */
     protected abstract CompletableFuture<List<String>> createSubdomain(String subdomain, String ip, int port);
+
+    /**
+     * Delete the DNS records associated with the provided subdomain
+     * @param subdomain the subdomain to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    protected abstract CompletableFuture<Boolean> deleteSubdomain(Subdomain subdomain);
 }

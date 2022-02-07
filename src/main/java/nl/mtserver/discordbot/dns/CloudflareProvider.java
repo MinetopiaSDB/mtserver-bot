@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import nl.mtserver.discordbot.data.Subdomain;
 import nl.mtserver.discordbot.utils.CompletableFutureUtil;
 
 import java.net.URI;
@@ -67,6 +68,39 @@ public class CloudflareProvider extends DNSProvider {
                 }
                 return Arrays.asList(zoneId, recordId);
             });
+        });
+    }
+
+    @Override
+    protected CompletableFuture<Boolean> deleteSubdomain(Subdomain subdomain) {
+        CompletableFuture<Boolean> deleteRecordFuture = CompletableFuture.completedFuture(true);
+
+        for (DNSRecord dnsRecord: subdomain.getDNSRecords()) {
+            deleteRecordFuture = deleteRecordFuture.thenCompose(success -> {
+                if (!success) {
+                    return CompletableFuture.completedFuture(false);
+                }
+                return deleteRecord(dnsRecord.getRecordId());
+            });
+        }
+        return deleteRecordFuture;
+    }
+
+    private CompletableFuture<Boolean> deleteRecord(String recordId) {
+        return request("/zones/" + zoneId + "/dns_records/" + recordId, "DELETE", new JsonObject()).thenApply(response -> {
+            JsonObject jsonObject = response.getAsJsonObject();
+            if (jsonObject.get("success").getAsBoolean()) {
+                // No errors, so subdomain was deleted successfully
+                return true;
+            }
+
+            JsonArray errors = jsonObject.get("errors").getAsJsonArray();
+            // Throw errors from Cloudflare API as runtime exception
+            String errorMessage = StreamSupport.stream(errors.spliterator(), false)
+                    .map(JsonElement::getAsJsonObject)
+                    .map(o -> o.get("message").getAsString())
+                    .collect(Collectors.joining(", "));
+            throw new RuntimeException(errorMessage);
         });
     }
 
