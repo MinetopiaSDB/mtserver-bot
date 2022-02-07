@@ -72,7 +72,7 @@ public class HikariSQL {
                     "(id INTEGER NOT NULL AUTO_INCREMENT, " +
                     "record_id VARCHAR(32) NOT NULL," +
                     "subdomain_id INTEGER NOT NULL," +
-                    "FOREIGN KEY (subdomain_id) REFERENCES subdomains(id)," +
+                    "FOREIGN KEY (subdomain_id) REFERENCES subdomains(id) ON DELETE CASCADE," +
                     "PRIMARY KEY(id))");
 
         } catch (SQLException exception) {

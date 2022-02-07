@@ -85,4 +85,14 @@ public class Subdomain {
             throw new RuntimeException("Failed to get DNS records for subdomain " + subdomain, exception);
         }
     }
+
+    public boolean delete() {
+        try(Connection connection = HikariSQL.getInstance().getConnection();
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM `subdomains` WHERE id=?")) {
+            statement.setInt(1, getId());
+            return statement.executeUpdate() == 1;
+        }catch(SQLException exception) {
+            throw new RuntimeException("Failed to delete subdomain " + subdomain, exception);
+        }
+    }
 }

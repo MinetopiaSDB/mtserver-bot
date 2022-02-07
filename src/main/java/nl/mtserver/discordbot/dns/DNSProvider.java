@@ -56,7 +56,7 @@ public abstract class DNSProvider {
     public static CompletableFuture<String> deleteSubdomain(DNSProvider dnsProvider, Subdomain subdomain) {
         return dnsProvider.deleteSubdomain(subdomain).thenApply(success -> {
             if (success) {
-                // TODO: delete subdomain from database
+                subdomain.delete();
                 return subdomain.getSubdomain() + "." + dnsProvider.getDomainName() + " is succesvol verwijderd.";
             }
             return "Er is iets misgegaan tijdens het verwijderen van dit subdomein.";
