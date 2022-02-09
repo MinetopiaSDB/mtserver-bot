@@ -48,8 +48,8 @@ public class CloudflareProvider extends DNSProvider {
 
     @Override
     protected CompletableFuture<List<String>> createSubdomain(String subdomain, String ip, int port) {
-        return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(zoneId -> {
-            if (zoneId == null) {
+        return createRecord("A", subdomain + "-ipv4." + domain, ip, false).thenCompose(aRecordId -> {
+            if (aRecordId == null) {
                 return CompletableFuture.completedFuture(new ArrayList<>());
             }
 
@@ -62,11 +62,11 @@ public class CloudflareProvider extends DNSProvider {
             data.addProperty("proto", "_tcp");
             data.addProperty("name", subdomain + "." + domain);
 
-            return createRecord("SRV", subdomain + "." + domain, ip, data, false).thenApply(recordId -> {
-                if (recordId == null) {
-                    // TODO: delete A record?
+            return createRecord("SRV", subdomain + "." + domain, ip, data, false).thenApply(srvRecordId -> {
+                if (srvRecordId == null) {
+                    deleteRecord(aRecordId);
                 }
-                return Arrays.asList(zoneId, recordId);
+                return Arrays.asList(aRecordId, srvRecordId);
             });
         });
     }
