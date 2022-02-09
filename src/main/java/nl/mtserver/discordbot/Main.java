@@ -1,7 +1,7 @@
 package nl.mtserver.discordbot;
 
+import nl.mtserver.discordbot.commands.CreateSubdomainCMD;
 import nl.mtserver.discordbot.data.HikariSQL;
-import nl.mtserver.discordbot.data.Subdomain;
 import nl.mtserver.discordbot.dns.CloudflareProvider;
 import nl.mtserver.discordbot.dns.DNSProvider;
 import org.simpleyaml.configuration.file.YamlFile;
@@ -40,6 +40,8 @@ public class Main {
 
         try {
             bot = new DiscordBot(configFile);
+            bot.registerCommands();
+            bot.getJDA().addEventListener(new CreateSubdomainCMD());
         } catch (LoginException ex) {
             throw new RuntimeException("Failed to login to Discord!", ex);
         }

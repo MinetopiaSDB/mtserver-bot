@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -100,7 +101,10 @@ public class CloudflareProvider extends DNSProvider {
                     .map(JsonElement::getAsJsonObject)
                     .map(o -> o.get("message").getAsString())
                     .collect(Collectors.joining(", "));
-            throw new RuntimeException(errorMessage);
+            // Throw errors from Cloudflare API as illegal argument exception
+            new IllegalArgumentException(errorMessage).printStackTrace();
+
+            return null;
         });
     }
 
@@ -137,12 +141,12 @@ public class CloudflareProvider extends DNSProvider {
             body.add("data", data);
 
         return request("/zones/" + zoneId + "/dns_records", "POST", body.getAsJsonObject())
-                .thenCompose(jsonElement -> {
+                .thenApply(jsonElement -> {
                     JsonObject jsonObject = jsonElement.getAsJsonObject();
                     if (jsonObject.get("success").getAsBoolean()) {
                         // No errors, so subdomain was created successfully
                         JsonObject result = jsonObject.getAsJsonObject("result");
-                        return CompletableFuture.completedFuture(result.get("id").getAsString());
+                        return result.get("id").getAsString();
                     }
 
                     JsonArray errors = jsonObject.get("errors").getAsJsonArray();
@@ -151,7 +155,11 @@ public class CloudflareProvider extends DNSProvider {
                             .map(JsonElement::getAsJsonObject)
                             .map(o -> o.get("message").getAsString())
                             .collect(Collectors.joining(", "));
-                    return CompletableFutureUtil.completedExceptionally(new RuntimeException(errorMessage));
+
+                    // Throw errors from Cloudflare API as illegal argument exception
+                    new IllegalArgumentException(errorMessage).printStackTrace();
+
+                    return null;
                 });
     }
 

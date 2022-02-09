@@ -49,7 +49,7 @@ public abstract class DNSProvider {
             }
             recordIds.forEach(recordId -> DNSRecord.create(recordId, subdomain));
 
-            return subdomainStr.toLowerCase() + "." + dnsProvider.getDomainName() + " is succesvol aangemaakt.";
+            return "Het subdomein " + subdomainStr.toLowerCase() + "." + dnsProvider.getDomainName() + " is succesvol aangemaakt!";
         });
     }
 
