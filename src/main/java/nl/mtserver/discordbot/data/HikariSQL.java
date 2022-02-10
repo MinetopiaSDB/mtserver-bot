@@ -63,18 +63,12 @@ public class HikariSQL {
                     "FOREIGN KEY (dns_provider_id) REFERENCES dns_providers(id)," +
                     "PRIMARY KEY(id))");
 
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS users " +
-                    "(id BIGINT(18) NOT NULL, " +
-                    "max_subdomains INT NOT NULL, " +
-                    "PRIMARY KEY(id))");
-
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS dns_records " +
                     "(id INTEGER NOT NULL AUTO_INCREMENT, " +
                     "record_id VARCHAR(32) NOT NULL," +
                     "subdomain_id INTEGER NOT NULL," +
                     "FOREIGN KEY (subdomain_id) REFERENCES subdomains(id) ON DELETE CASCADE," +
                     "PRIMARY KEY(id))");
-
         } catch (SQLException exception) {
             throw new RuntimeException("Failed to create tables", exception);
         }

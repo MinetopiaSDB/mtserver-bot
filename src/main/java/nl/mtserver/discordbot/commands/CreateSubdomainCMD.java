@@ -11,10 +11,17 @@ public class CreateSubdomainCMD implements BotCommand {
 
     @Override
     public void execute(Command cmd, SlashCommandEvent event) {
+        if (Subdomain.find(event.getUser().getIdLong()).size() > 0) {
+            event.reply("Je kan maximaal 1 subdomein hebben! Je kunt je huidige subdomeinen zien met **/listsubdomains**.")
+                    .setEphemeral(true).queue();
+            return;
+        }
+
         String subdomainName = event.getOption("subdomein").getAsString();
         String ipAddress = event.getOption("ip-adres").getAsString();
         if (event.getOption("poort").getAsLong() > 65535 || event.getOption("poort").getAsLong() < 1) {
             event.reply("Je hebt een ongeldige poort opgegeven!").setEphemeral(true).queue();
+            return;
         }
         int port = (int) event.getOption("poort").getAsLong();
 
