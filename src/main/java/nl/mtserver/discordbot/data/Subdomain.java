@@ -7,6 +7,7 @@ import nl.mtserver.discordbot.dns.DNSRecord;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public record Subdomain(int id, String subdomain, long userId, int dnsProviderId) {
 
@@ -98,31 +99,35 @@ public record Subdomain(int id, String subdomain, long userId, int dnsProviderId
                 .findFirst().orElse(null);
     }
 
-    public List<DNSRecord> getDNSRecords() {
-        List<DNSRecord> records = new ArrayList<>();
-        try (Connection connection = HikariSQL.getInstance().getConnection();
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM `dns_records` WHERE subdomain_id=?")) {
-            statement.setInt(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    records.add(new DNSRecord(resultSet.getInt("id"), resultSet.getString("record_id"),
-                            resultSet.getInt("subdomain_id")));
+    public CompletableFuture<List<DNSRecord>> getDNSRecords() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<DNSRecord> records = new ArrayList<>();
+            try (Connection connection = HikariSQL.getInstance().getConnection();
+                 PreparedStatement statement = connection.prepareStatement("SELECT * FROM `dns_records` WHERE subdomain_id=?")) {
+                statement.setInt(1, id);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        records.add(new DNSRecord(resultSet.getInt("id"), resultSet.getString("record_id"),
+                                resultSet.getInt("subdomain_id")));
+                    }
                 }
-            }
 
-            return records;
-        } catch (SQLException exception) {
-            throw new RuntimeException("Failed to get DNS records for subdomain " + subdomain, exception);
-        }
+                return records;
+            } catch (SQLException exception) {
+                throw new RuntimeException("Failed to get DNS records for subdomain " + subdomain, exception);
+            }
+        });
     }
 
-    public boolean delete() {
-        try (Connection connection = HikariSQL.getInstance().getConnection();
-             PreparedStatement statement = connection.prepareStatement("DELETE FROM `subdomains` WHERE id=?")) {
-            statement.setInt(1, getId());
-            return statement.executeUpdate() == 1;
-        } catch (SQLException exception) {
-            throw new RuntimeException("Failed to delete subdomain " + subdomain, exception);
-        }
+    public CompletableFuture<Boolean> delete() {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = HikariSQL.getInstance().getConnection();
+                 PreparedStatement statement = connection.prepareStatement("DELETE FROM `subdomains` WHERE id=?")) {
+                statement.setInt(1, getId());
+                return statement.executeUpdate() == 1;
+            } catch (SQLException exception) {
+                throw new RuntimeException("Failed to delete subdomain " + subdomain, exception);
+            }
+        });
     }
 }

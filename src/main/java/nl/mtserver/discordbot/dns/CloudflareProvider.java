@@ -73,17 +73,19 @@ public class CloudflareProvider extends DNSProvider {
 
     @Override
     protected CompletableFuture<Boolean> deleteSubdomain(Subdomain subdomain) {
-        CompletableFuture<Boolean> deleteRecordFuture = CompletableFuture.completedFuture(true);
+        return subdomain.getDNSRecords().thenCompose(dnsRecords -> {
+            CompletableFuture<Boolean> deleteRecordFuture = CompletableFuture.completedFuture(true);
 
-        for (DNSRecord dnsRecord: subdomain.getDNSRecords()) {
-            deleteRecordFuture = deleteRecordFuture.thenCompose(success -> {
-                if (!success) {
-                    return CompletableFuture.completedFuture(false);
-                }
-                return deleteRecord(dnsRecord.getRecordId());
-            });
-        }
-        return deleteRecordFuture;
+            for (DNSRecord dnsRecord: dnsRecords) {
+                deleteRecordFuture = deleteRecordFuture.thenCompose(success -> {
+                    if (!success) {
+                        return CompletableFuture.completedFuture(false);
+                    }
+                    return deleteRecord(dnsRecord.getRecordId());
+                });
+            }
+            return deleteRecordFuture;
+        });
     }
 
     private CompletableFuture<Boolean> deleteRecord(String recordId) {
