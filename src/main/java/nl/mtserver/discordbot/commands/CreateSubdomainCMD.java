@@ -40,7 +40,7 @@ public class CreateSubdomainCMD extends ListenerAdapter {
             return;
         }
         if (subdomain != null) {
-            event.reply(subdomainName + " " + provider.getDomainName() + " bestaat al!").setEphemeral(true).queue();
+            event.reply(subdomainName + "." + provider.getDomainName() + " bestaat al!").setEphemeral(true).queue();
             return;
         }
 
