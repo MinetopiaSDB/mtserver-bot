@@ -80,6 +80,24 @@ public record Subdomain(int id, String subdomain, long userId, int dnsProviderId
                 .findFirst().orElse("");
     }
 
+    /**
+     * Get the fully qualified domain name for this subdomain
+     * @return The fully qualified domain name (e.g. wouter.mtserver.nl)
+     */
+    public String getFQDN() {
+        return getSubdomain() + "." + getDomainName();
+    }
+
+    public int getDNSProviderId() {
+        return dnsProviderId;
+    }
+
+    public DNSProvider getDNSProvider() {
+        return Main.getDNSProviders().stream()
+                .filter(dnsProvider -> dnsProvider.getDNSProviderId() == dnsProviderId)
+                .findFirst().orElse(null);
+    }
+
     public List<DNSRecord> getDNSRecords() {
         List<DNSRecord> records = new ArrayList<>();
         try (Connection connection = HikariSQL.getInstance().getConnection();

@@ -11,7 +11,7 @@ public class CreateSubdomainCMD implements BotCommand {
 
     @Override
     public void execute(Command cmd, SlashCommandEvent event) {
-        String subdomainName = event.getOption("naam").getAsString();
+        String subdomainName = event.getOption("subdomein").getAsString();
         String ipAddress = event.getOption("ip-adres").getAsString();
         if (event.getOption("poort").getAsLong() > 65535 || event.getOption("poort").getAsLong() < 1) {
             event.reply("Je hebt een ongeldige poort opgegeven!").setEphemeral(true).queue();
@@ -37,7 +37,7 @@ public class CreateSubdomainCMD implements BotCommand {
             return;
         }
         if (subdomain != null) {
-            event.reply(subdomainName + "." + provider.getDomainName() + " bestaat al!").setEphemeral(true).queue();
+            event.reply(subdomain.getFQDN() + " bestaat al!").setEphemeral(true).queue();
             return;
         }
 

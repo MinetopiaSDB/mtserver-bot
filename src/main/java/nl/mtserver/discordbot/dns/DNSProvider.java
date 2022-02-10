@@ -49,7 +49,7 @@ public abstract class DNSProvider {
             }
             recordIds.forEach(recordId -> DNSRecord.create(recordId, subdomain));
 
-            return "Het subdomein " + subdomainStr.toLowerCase() + "." + dnsProvider.getDomainName() + " is succesvol aangemaakt!";
+            return "Het subdomein " + subdomain.getFQDN() + " is succesvol aangemaakt!";
         });
     }
 
@@ -57,7 +57,7 @@ public abstract class DNSProvider {
         return dnsProvider.deleteSubdomain(subdomain).thenApply(success -> {
             if (success) {
                 subdomain.delete();
-                return subdomain.getSubdomain() + "." + dnsProvider.getDomainName() + " is succesvol verwijderd.";
+                return subdomain.getFQDN() + " is succesvol verwijderd.";
             }
             return "Er is iets misgegaan tijdens het verwijderen van dit subdomein.";
         });

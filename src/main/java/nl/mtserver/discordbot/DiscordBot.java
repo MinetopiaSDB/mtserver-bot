@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import nl.mtserver.discordbot.commands.CreateSubdomainCMD;
+import nl.mtserver.discordbot.commands.DeleteSubdomainCMD;
 import nl.mtserver.discordbot.commands.ListSubdomainCMD;
 import nl.mtserver.discordbot.utils.commands.CommandFactory;
 import org.simpleyaml.configuration.file.YamlFile;
@@ -35,14 +36,25 @@ public class DiscordBot {
 
         // If there are multiple DNS providers, add the option to select a specific domain
         List<OptionData> createSubdomainCmdOptions = new ArrayList<>();
-        createSubdomainCmdOptions.add(new OptionData(OptionType.STRING, "naam", "De naam van jouw subdomein (bijvoorbeeld 'mijnserver')", true));
+        List<OptionData> deleteSubdomainCmdOptions = new ArrayList<>();
+        OptionData subdomainName = new OptionData(OptionType.STRING, "subdomein", "De naam van jouw subdomein (bijvoorbeeld 'mijnserver')", true);
+        createSubdomainCmdOptions.add(subdomainName);
+        deleteSubdomainCmdOptions.add(subdomainName);
 
         if (Main.getDNSProviders().size() > 1) {
             String domainName = Main.getDNSProviders().get(0).getDomainName();
-            OptionData domainOption = new OptionData(OptionType.INTEGER, "domein",
+
+            // subdomain create
+            OptionData createDomainOption = new OptionData(OptionType.INTEGER, "domein",
                     "De domeinnaam waar jij jouw subdomein op aan wilt maken (bijvoorbeeld '" + domainName + "')", true);
-            Main.getDNSProviders().forEach(provider -> domainOption.addChoice(provider.getDomainName(), provider.getDNSProviderId()));
-            createSubdomainCmdOptions.add(domainOption);
+            Main.getDNSProviders().forEach(provider -> createDomainOption.addChoice(provider.getDomainName(), provider.getDNSProviderId()));
+            createSubdomainCmdOptions.add(createDomainOption);
+
+            // subdomain delete
+            OptionData deleteDomainOption = new OptionData(OptionType.INTEGER, "domein",
+                    "De domeinnaam waar jij jouw subdomein van wilt verwijderen (bijvoorbeeld '" + domainName + "')", true);
+            Main.getDNSProviders().forEach(provider -> deleteDomainOption.addChoice(provider.getDomainName(), provider.getDNSProviderId()));
+            deleteSubdomainCmdOptions.add(deleteDomainOption);
         }
 
         // Add IP-address and port options after the subdomain and domain option
@@ -53,6 +65,9 @@ public class DiscordBot {
 
         factory.registerCommand("createsubdomain", "Maak een subdomein aan voor jouw Minecraft server.",
                 new CreateSubdomainCMD(), createSubdomainCmdOptions.toArray(new OptionData[0]));
+
+        factory.registerCommand("deletesubdomain", "Verwijder een subdomein.", new DeleteSubdomainCMD(),
+                deleteSubdomainCmdOptions.toArray(new OptionData[0]));
 
         factory.registerCommand("listsubdomains", "Bekijk alle subdomeinen die jij hebt.",
                 new ListSubdomainCMD());
