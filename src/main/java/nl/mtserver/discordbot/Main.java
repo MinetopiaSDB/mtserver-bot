@@ -1,10 +1,10 @@
 package nl.mtserver.discordbot;
 
-import nl.mtserver.discordbot.commands.CreateSubdomainCMD;
-import nl.mtserver.discordbot.commands.ListSubdomainCMD;
 import nl.mtserver.discordbot.data.HikariSQL;
 import nl.mtserver.discordbot.dns.CloudflareProvider;
 import nl.mtserver.discordbot.dns.DNSProvider;
+import nl.mtserver.discordbot.listeners.CommandListener;
+import nl.mtserver.discordbot.utils.commands.CommandFactory;
 import org.simpleyaml.configuration.file.YamlFile;
 import org.simpleyaml.exceptions.InvalidConfigurationException;
 
@@ -16,8 +16,9 @@ import java.util.Map;
 
 public class Main {
 
-    private static DiscordBot bot;
     private static final List<DNSProvider> dnsProviders = new ArrayList<>();
+    private static DiscordBot bot;
+    private static CommandFactory factory;
 
     public static void main(String[] args) {
         YamlFile configFile = new YamlFile("config.yml");
@@ -41,9 +42,9 @@ public class Main {
 
         try {
             bot = new DiscordBot(configFile);
-            bot.registerCommands();
-            bot.getJDA().addEventListener(new CreateSubdomainCMD());
-            bot.getJDA().addEventListener(new ListSubdomainCMD());
+            factory = new CommandFactory(bot);
+            bot.registerCommands(factory);
+            bot.getJDA().addEventListener(new CommandListener());
         } catch (LoginException ex) {
             throw new RuntimeException("Failed to login to Discord!", ex);
         }
@@ -51,5 +52,9 @@ public class Main {
 
     public static List<DNSProvider> getDNSProviders() {
         return dnsProviders;
+    }
+
+    public static CommandFactory getCommandFactory() {
+        return factory;
     }
 }

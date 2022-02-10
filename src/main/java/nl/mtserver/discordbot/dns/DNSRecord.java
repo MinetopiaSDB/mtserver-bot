@@ -4,9 +4,8 @@ import nl.mtserver.discordbot.data.HikariSQL;
 import nl.mtserver.discordbot.data.Subdomain;
 
 import java.sql.*;
-import java.util.concurrent.CompletableFuture;
 
-public class DNSRecord {
+public record DNSRecord(int id, String recordId, int subdomainId) {
 
     public static DNSRecord create(String recordId, Subdomain subdomain) {
         try (Connection connection = HikariSQL.getInstance().getConnection();
@@ -24,15 +23,6 @@ public class DNSRecord {
             throw new RuntimeException("Failed to store DNS record in database", exception);
         }
         return null;
-    }
-
-    private int id, subdomainId;
-    private String recordId;
-
-    public DNSRecord(int id, String recordId, int subdomainId) {
-        this.id = id;
-        this.recordId = recordId;
-        this.subdomainId = subdomainId;
     }
 
     public int getId() {

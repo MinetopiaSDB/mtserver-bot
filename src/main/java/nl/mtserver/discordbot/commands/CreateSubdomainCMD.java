@@ -1,19 +1,16 @@
 package nl.mtserver.discordbot.commands;
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import nl.mtserver.discordbot.Main;
 import nl.mtserver.discordbot.data.Subdomain;
 import nl.mtserver.discordbot.dns.DNSProvider;
-import org.jetbrains.annotations.NotNull;
+import nl.mtserver.discordbot.utils.commands.BotCommand;
+import nl.mtserver.discordbot.utils.commands.Command;
 
-public class CreateSubdomainCMD extends ListenerAdapter {
+public class CreateSubdomainCMD implements BotCommand {
 
     @Override
-    public void onSlashCommand(@NotNull SlashCommandEvent event) {
-        if (!event.getName().equalsIgnoreCase("createsubdomain")) {
-            return;
-        }
+    public void execute(Command cmd, SlashCommandEvent event) {
         String subdomainName = event.getOption("naam").getAsString();
         String ipAddress = event.getOption("ip-adres").getAsString();
         if (event.getOption("poort").getAsLong() > 65535 || event.getOption("poort").getAsLong() < 1) {

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -114,7 +113,7 @@ public class CloudflareProvider extends DNSProvider {
      * @param name The name of the record
      * @param content The IP address or domain name
      * @param proxied Whether the record should be proxied
-     * @return
+     * @return ID of created DNS record
      */
     private CompletableFuture<String> createRecord(String type, String name, String content, boolean proxied) throws RuntimeException {
         return createRecord(type, name, content, null, proxied);
