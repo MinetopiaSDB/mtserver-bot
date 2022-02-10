@@ -7,6 +7,8 @@ import nl.mtserver.discordbot.dns.DNSProvider;
 import nl.mtserver.discordbot.utils.commands.BotCommand;
 import nl.mtserver.discordbot.utils.commands.Command;
 
+import java.util.Arrays;
+
 public class CreateSubdomainCMD implements BotCommand {
 
     @Override
@@ -19,6 +21,11 @@ public class CreateSubdomainCMD implements BotCommand {
 
         String subdomainName = event.getOption("subdomein").getAsString();
         String ipAddress = event.getOption("ip-adres").getAsString();
+        if (Arrays.asList("www", "mail", "ftp", "beheer", "dashboard", "dash", "play", "mc").contains(subdomainName.toLowerCase())) {
+            event.reply("Je hebt een ongeldig subdomein opgegeven!").setEphemeral(true).queue();
+            return;
+        }
+
         if (event.getOption("poort").getAsLong() > 65535 || event.getOption("poort").getAsLong() < 1) {
             event.reply("Je hebt een ongeldige poort opgegeven!").setEphemeral(true).queue();
             return;
