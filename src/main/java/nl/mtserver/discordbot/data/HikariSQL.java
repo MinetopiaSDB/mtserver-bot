@@ -8,13 +8,10 @@ import java.sql.Statement;
 
 public class HikariSQL {
 
-    public static HikariSQL instance = null;
+    public static final HikariSQL instance = new HikariSQL();
     private HikariDataSource hikari;
 
     public static HikariSQL getInstance() {
-        if (instance == null) {
-            instance = new HikariSQL();
-        }
         return instance;
     }
 

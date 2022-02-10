@@ -55,7 +55,7 @@ public abstract class DNSProvider {
 
     public static CompletableFuture<String> deleteSubdomain(DNSProvider dnsProvider, Subdomain subdomain) {
         return dnsProvider.deleteSubdomain(subdomain).thenApply(success -> {
-            if (success) {
+            if (Boolean.TRUE.equals(success)) {
                 subdomain.delete();
                 return subdomain.getFQDN() + " is succesvol verwijderd.";
             }

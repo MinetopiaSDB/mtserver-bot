@@ -11,7 +11,7 @@ public class CreateSubdomainCMD implements BotCommand {
 
     @Override
     public void execute(Command cmd, SlashCommandEvent event) {
-        if (Subdomain.find(event.getUser().getIdLong()).size() > 0) {
+        if (!Subdomain.find(event.getUser().getIdLong()).isEmpty()) {
             event.reply("Je kan maximaal 1 subdomein hebben! Je kunt je huidige subdomeinen zien met **/listsubdomains**.")
                     .setEphemeral(true).queue();
             return;
@@ -51,9 +51,7 @@ public class CreateSubdomainCMD implements BotCommand {
         DNSProvider finalProvider = provider;
         event.deferReply(true).queue(message -> {
             DNSProvider.createSubdomain(finalProvider, event.getUser().getIdLong(), subdomainName, ipAddress, port)
-                    .thenAccept(statusMessage -> {
-                        message.editOriginal(statusMessage).queue();
-                    });
+                    .thenAccept(statusMessage -> message.editOriginal(statusMessage).queue());
         });
     }
 }

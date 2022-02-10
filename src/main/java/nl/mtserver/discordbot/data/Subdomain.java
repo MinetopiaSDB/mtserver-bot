@@ -64,7 +64,7 @@ public record Subdomain(int id, String subdomain, long userId, int dnsProviderId
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-        return null;
+        return new ArrayList<>();
     }
 
     public int getId() {

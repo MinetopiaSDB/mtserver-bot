@@ -78,7 +78,7 @@ public class CloudflareProvider extends DNSProvider {
 
             for (DNSRecord dnsRecord: dnsRecords) {
                 deleteRecordFuture = deleteRecordFuture.thenCompose(success -> {
-                    if (!success) {
+                    if (Boolean.FALSE.equals(success)) {
                         return CompletableFuture.completedFuture(false);
                     }
                     return deleteRecord(dnsRecord.getRecordId());
