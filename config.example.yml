@@ -12,3 +12,8 @@ Domains:
       Domain: 'mtserver.nl'
       AuthEmail: ''
       AuthKey: ''
+#  -
+#    ZoneId: ''
+#    Domain: 'eenanderedomeinnaam.nl'
+#    AuthEmail: ''
+#    AuthKey: ''
