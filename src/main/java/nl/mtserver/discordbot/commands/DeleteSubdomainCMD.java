@@ -24,7 +24,8 @@ public class DeleteSubdomainCMD implements BotCommand {
 
         if (subdomain == null) {
             event.reply("Je hebt geen toestemming om dit subdomein te verwijderen! " +
-                    "Om een lijst van jouw subdomeinen te krijgen kan je **/listsubdomains** gebruiken.").queue();
+                    "Om een lijst van jouw subdomeinen te krijgen kan je **/listsubdomains** gebruiken.")
+                    .setEphemeral(true).queue();
             return;
         }
 

@@ -22,8 +22,7 @@ Deze kun je op de [API Tokens](https://dash.cloudflare.com/profile/api-tokens) p
 
 Je kunt deze Global API Key nu invullen op de plek van `AuthKey`. Vul gelijk het e-mailadres van jouw Cloudflare account in bij het `AuthEmail` veld van jouw config.yml.
 
-De `ZoneId` kun je ophalen door jouw domeinnaam te openen in jouw Cloudflare dashboard. Het ZoneId is vervolgens in de URL te vinden, aangeven met de 32 x-jes in de onderstaande URL:
-`https://dash.cloudflare.com/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/mtserver.nl`
+De `ZoneId` kun je ophalen door jouw domeinnaam te openen in jouw Cloudflare dashboard. Het ZoneId is vervolgens te vinden aan de rechterkant van jouw scherm onder het kopje 'API'.
 
 Je kunt meerdere domeinnamen toevoegen in jouw config.yml bestand, waarna gebruikers 
 ```yaml
