@@ -11,7 +11,7 @@ Er zijn drie commands in deze Discord bot:
 - `/listsubdomains`: Met dit command kan een gebruiker een lijst van zijn subdomein(en) zien.
 
 ## Hoe kan ik de bot zelf hosten?
-Download de laatste versie van de bot [hier](https://github.com/MinetopiaSDB/mtserver-bot/releases).
+Download de laatste versie van de bot [hier](https://github.com/MinetopiaSDB/mtserver-bot/releases). De MTSERVER Discord bot vereist Java 17.
 
 Voordat je aan de slag kunt, moet je de bot token en MySQL inloggegevens instellen in het config.yml bestand. 
 Je kunt hiervoor het config.example.yml bestand gebruiken. 

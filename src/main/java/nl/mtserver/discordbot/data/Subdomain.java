@@ -13,8 +13,8 @@ public record Subdomain(int id, String subdomain, long userId, int dnsProviderId
 
     public static Subdomain findOrCreate(String subdomain, long userId, DNSProvider provider) {
         try (Connection connection = HikariSQL.getInstance().getConnection();
-             PreparedStatement statement = connection.prepareStatement("INSERT INTO `subdomains` (subdomain, user_id, dns_provider_id)" +
-                     "VALUES (?, ?, ?) " +
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO `subdomains` " +
+                     "(subdomain, user_id, dns_provider_id) VALUES (?, ?, ?) " +
                      "ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)", Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, subdomain);
             statement.setLong(2, userId);
