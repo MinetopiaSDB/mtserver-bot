@@ -24,7 +24,7 @@ Je kunt deze Global API Key nu invullen op de plek van `AuthKey`. Vul gelijk het
 
 De `ZoneId` kun je ophalen door jouw domeinnaam te openen in jouw Cloudflare dashboard. Het ZoneId is vervolgens te vinden aan de rechterkant van jouw scherm onder het kopje 'API'.
 
-Je kunt meerdere domeinnamen toevoegen in jouw config.yml bestand, waarna gebruikers 
+Je kunt meerdere domeinnamen toevoegen in jouw config.yml bestand, waarna gebruikers met de slash commands zelf kunnen kiezen onder welk domein ze hun subdomein aan willen maken. 
 ```yaml
 Discord:
   BotToken: 'YOUR_BOT_TOKEN'
