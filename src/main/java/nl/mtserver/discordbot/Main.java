@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class Main {
 
@@ -20,11 +21,12 @@ public class Main {
     private static DiscordBot bot;
     private static CommandFactory factory;
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         YamlFile configFile = new YamlFile("config.yml");
         try {
             configFile.load();
-        } catch (InvalidConfigurationException | IOException ex) {
+        } catch (Exception ex) {
             throw new RuntimeException("Config file not found or malformed!", ex);
         }
 
@@ -32,13 +34,14 @@ public class Main {
                 configFile.getString("Database.user"), configFile.getString("Database.password"), configFile.getString("Database.database"));
 
 
-        for (Object dnsProviderObj : configFile.getList("Domains")) {
-            Map<String, String> dnsProvider = (Map<String, String>) dnsProviderObj;
-
-            int id = DNSProvider.firstOrCreate(dnsProvider.get("Domain"));
-            dnsProviders.add(new CloudflareProvider(id, dnsProvider.get("ZoneId"), dnsProvider.get("Domain"),
-                    dnsProvider.get("AuthEmail"), dnsProvider.get("AuthKey")));
-        }
+        configFile.getList("Domains").stream()
+                .filter(p -> p instanceof Map<?, ?>)
+                .map(p -> (Map<String, String>) p)
+                .forEach(dnsProvider -> {
+                    int id = DNSProvider.firstOrCreate(dnsProvider.get("Domain"));
+                    dnsProviders.add(new CloudflareProvider(id, dnsProvider.get("ZoneId"), dnsProvider.get("Domain"),
+                            dnsProvider.get("AuthEmail"), dnsProvider.get("AuthKey")));
+                });
 
         try {
             bot = new DiscordBot(configFile);
